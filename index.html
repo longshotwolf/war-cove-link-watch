@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>War Cove — Link Watch</title>
+<style>
+  :root{color-scheme:dark;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:#0b0e13;color:#e8ecf3;
+    font-family:Georgia,'Times New Roman',serif;padding:28px 18px 40px;}
+  main{max-width:860px;margin:0 auto;}
+  h1{font-size:26px;letter-spacing:.04em;margin:0 0 4px;font-weight:700;}
+  .sub{color:#9aa7ba;font-size:14px;margin:0 0 22px;line-height:1.5;}
+  table{width:100%;border-collapse:collapse;font-size:15px;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #232b38;}
+  th{color:#9aa7ba;font-size:12px;letter-spacing:.14em;font-weight:700;}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
+  td.now{font-weight:700;}
+  a{color:#7fd4ff;text-decoration:none;word-break:break-all;}
+  a:hover{text-decoration:underline;}
+  .addr{color:#9aa7ba;font-size:12.5px;}
+  .foot{color:#67738a;font-size:12.5px;margin-top:20px;line-height:1.6;}
+  #stamp{color:#67738a;font-size:12.5px;margin-top:6px;}
+  @media (max-width:640px){ .addr{display:none;} }
+</style>
+</head>
+<body>
+<main>
+  <h1>WAR COVE — LINK WATCH</h1>
+  <p class="sub">Every public house link, counted silently. Watching now is
+  who has the link open at this moment; views is every load since the
+  counter started. The tags on the pages show nothing — the numbers
+  stand here only.</p>
+  <table>
+    <thead>
+      <tr><th>LINK</th><th class="addr">ADDRESS</th>
+          <th class="num">WATCHING NOW</th><th class="num">VIEWS</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div id="stamp">reading the counter…</div>
+  <p class="foot">House numbers, for the Warlord's eyes. This address is
+  never posted. A dash means the counter lane is unreachable right now —
+  the numbers are never guessed.</p>
+</main>
+<script>
+var LINKS = [
+  ["live-board",         "Master Board",                    "https://longshotwolf.github.io/war-cove-live-board/"],
+  ["live-board-discord", "Master Board — Discord copy",     "https://longshotwolf.github.io/war-cove-live-board-discord/"],
+  ["proof-page",         "Longshot Wolf's Scroll of Proof", "https://longshotwolf.github.io/war-cove-proof-page/"],
+  ["day-brief-warlord",  "Day Brief — Warlord copy",        "https://longshotwolf.github.io/war-cove-day-brief-warlord/"],
+  ["day-brief",          "Day Brief — Pages copy",          "https://longshotwolf.github.io/war-cove-day-brief/"],
+  ["stock-board-discord","Stock Board — Discord copy",      "https://longshotwolf.github.io/war-cove-stock-board-discord/"],
+  ["board",              "Paper Game — Board",              "https://longshotwolf.github.io/war-cove-board/"],
+  ["battlefield",        "Battlefield Chart",               "https://longshotwolf.github.io/war-cove-battlefield/"],
+  ["newsroom",           "War Cove Newsroom",               "https://longshotwolf.github.io/war-cove-newsroom/"],
+  ["newsroom-preview",   "Sheity — Newsroom Preview",       "https://longshotwolf.github.io/war-cove-newsroom-preview/"],
+  ["candle-commentary",  "Calla — Candle Commentary",       "https://longshotwolf.github.io/war-cove-candle-commentary/"],
+  ["link-watch",         "Link Watch — this page",          "https://longshotwolf.github.io/war-cove-link-watch/"]
+];
+var DOC = "https://longshotwolf.github.io/war-cove-newsroom-preview/simli-endpoint.json";
+var rowsEl = document.getElementById("rows");
+var stampEl = document.getElementById("stamp");
+var cells = {};
+LINKS.forEach(function(L){
+  var tr = document.createElement("tr");
+  var tdName = document.createElement("td");
+  tdName.textContent = L[1];
+  var tdAddr = document.createElement("td");
+  tdAddr.className = "addr";
+  var a = document.createElement("a");
+  a.href = L[2]; a.textContent = L[2]; a.target = "_blank"; a.rel = "noopener";
+  tdAddr.appendChild(a);
+  var tdNow = document.createElement("td");
+  tdNow.className = "num now"; tdNow.textContent = "—";
+  var tdViews = document.createElement("td");
+  tdViews.className = "num"; tdViews.textContent = "—";
+  tr.appendChild(tdName); tr.appendChild(tdAddr);
+  tr.appendChild(tdNow); tr.appendChild(tdViews);
+  rowsEl.appendChild(tr);
+  cells[L[0]] = {now: tdNow, views: tdViews};
+});
+var ep = null;
+function discover(){
+  return fetch(DOC + "?cb=" + Date.now(), {mode:"cors", cache:"no-store"})
+    .then(function(r){ return r.json(); })
+    .then(function(j){ if (j && j.counter) ep = j.counter; });
+}
+function paint(pages){
+  LINKS.forEach(function(L){
+    var p = pages && pages[L[0]];
+    cells[L[0]].now.textContent = p ? String(p.watching_now) : "0";
+    cells[L[0]].views.textContent = p ? String(p.views_total) : "0";
+  });
+  var t = new Date();
+  stampEl.textContent = "updated " + t.toLocaleTimeString("en-US",
+    {hour12:false}) + " NYC-house count, live from the counter lane";
+}
+function fail(){
+  LINKS.forEach(function(L){
+    cells[L[0]].now.textContent = "—";
+    cells[L[0]].views.textContent = "—";
+  });
+  stampEl.textContent = "counter lane unreachable — retrying";
+}
+function tick(){
+  var chain = ep ? Promise.resolve() : discover();
+  chain.then(function(){
+    if (!ep) throw 0;
+    return fetch(ep + "/counts", {mode:"cors", cache:"no-store"});
+  }).then(function(r){ if (!r.ok) throw 0; return r.json(); })
+    .then(function(j){ paint(j.pages || {}); })
+    .catch(function(){ ep = null; fail(); });
+}
+tick();
+setInterval(tick, 15000);
+</script>
+<!-- WC-LINK-COUNTER key=link-watch -->
+<script>
+(function(){try{
+var KEY="link-watch",DOC="https://longshotwolf.github.io/war-cove-newsroom-preview/simli-endpoint.json";
+var id=null;try{id=window.sessionStorage.getItem("wc-link-id");if(!id){id="w"+Math.random().toString(36).slice(2)+Date.now().toString(36);window.sessionStorage.setItem("wc-link-id",id);}}catch(e){id="w"+Math.random().toString(36).slice(2)+Date.now().toString(36);}
+var ep=null,viewed=false,fails=0;
+function send(path){if(!ep)return;try{fetch(ep+path+"?page="+encodeURIComponent(KEY)+"&id="+encodeURIComponent(id),{mode:"cors",cache:"no-store",keepalive:true}).then(function(r){if(!r.ok)throw 0;fails=0;if(path==="/view")viewed=true;}).catch(function(){fails++;if(fails>=2){ep=null;discover();}});}catch(e){}}
+function discover(){try{fetch(DOC+"?cb="+Date.now(),{mode:"cors",cache:"no-store"}).then(function(r){return r.json();}).then(function(j){if(j&&j.counter){ep=j.counter;if(!viewed)send("/view");}}).catch(function(){});}catch(e){}}
+discover();
+setInterval(function(){if(ep){if(!viewed)send("/view");else send("/beat");}else discover();},20000);
+}catch(e){}})();
+</script>
+<!-- /WC-LINK-COUNTER -->
+</body>
+</html>
