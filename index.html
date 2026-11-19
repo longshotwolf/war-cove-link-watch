@@ -10,20 +10,59 @@
   *{box-sizing:border-box;}
   body{margin:0;background:#0b0e13;color:#e8ecf3;
     font-family:Georgia,'Times New Roman',serif;padding:28px 18px 40px;}
-  main{max-width:860px;margin:0 auto;}
+  main{max-width:920px;margin:0 auto;}
   h1{font-size:26px;letter-spacing:.04em;margin:0 0 4px;font-weight:700;}
-  .sub{color:#9aa7ba;font-size:14px;margin:0 0 22px;line-height:1.5;}
+  h2{font-size:14px;letter-spacing:.22em;color:#ffb3b3;margin:26px 0 8px;}
+  h2.plain{color:#9aa7ba;}
+  .sub{color:#9aa7ba;font-size:14px;margin:0 0 6px;line-height:1.55;}
   table{width:100%;border-collapse:collapse;font-size:15px;}
-  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #232b38;}
-  th{color:#9aa7ba;font-size:12px;letter-spacing:.14em;font-weight:700;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #232b38;
+    vertical-align:middle;}
+  th{color:#9aa7ba;font-size:11.5px;letter-spacing:.14em;font-weight:700;}
   td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
   td.now{font-weight:700;}
   a{color:#7fd4ff;text-decoration:none;word-break:break-all;}
   a:hover{text-decoration:underline;}
   .addr{color:#9aa7ba;font-size:12.5px;}
+  .fp{color:#67738a;font-size:11.5px;font-family:ui-monospace,Menlo,monospace;
+    letter-spacing:.03em;}
+  .status{font-size:12px;letter-spacing:.12em;font-weight:700;}
+  .status.live{color:#57e6a9;}
+  .status.cut{color:#ff6b6b;}
+  .badge{display:none;background:#a11212;color:#fff;font-size:11px;
+    letter-spacing:.12em;font-weight:700;padding:2px 8px;border-radius:3px;
+    margin-left:8px;animation:flagpulse 1.1s ease-in-out infinite;}
+  tr.flagged{background:rgba(161,18,18,.13);}
+  tr.flagged .badge{display:inline-block;}
+  tr.flagged td.now{color:#ff8585;}
+  @keyframes flagpulse{0%,100%{opacity:1;}50%{opacity:.45;}}
   .foot{color:#67738a;font-size:12.5px;margin-top:20px;line-height:1.6;}
-  #stamp{color:#67738a;font-size:12.5px;margin-top:6px;}
-  @media (max-width:640px){ .addr{display:none;} }
+  #stamp{color:#67738a;font-size:12.5px;margin-top:10px;}
+
+  /* ── THE AXE — the switch both ways ─────────────────────── */
+  .axe-btn{background:none;border:0;cursor:pointer;padding:2px 4px;
+    display:flex;flex-direction:column;align-items:center;gap:1px;
+    -webkit-tap-highlight-color:transparent;}
+  .axe-btn .axe{width:44px;height:44px;display:block;
+    transform:rotate(0deg);transform-origin:50% 85%;
+    transition:transform .25s ease, filter .25s ease, opacity .25s ease;
+    filter:drop-shadow(0 0 7px rgba(80,200,255,.65))
+           drop-shadow(0 0 2px rgba(160,240,255,.8));}
+  .axe-btn .shimmer{animation:shimmer 3.4s ease-in-out infinite;}
+  @keyframes shimmer{0%,68%{opacity:0;}80%{opacity:.8;}93%,100%{opacity:0;}}
+  .axe-btn .axe-label{font-size:10px;letter-spacing:.18em;font-weight:700;
+    color:#7fd4ff;font-family:Georgia,serif;}
+  .axe-btn.armed .axe{transform:rotate(-14deg) translateY(-3px);
+    filter:drop-shadow(0 0 10px rgba(255,70,70,.9))
+           drop-shadow(0 0 3px rgba(255,160,160,.9));
+    animation:armshake .3s ease-in-out infinite alternate;}
+  .axe-btn.armed .axe-label{color:#ff8585;}
+  @keyframes armshake{from{margin-left:-1px;}to{margin-left:1px;}}
+  .axe-btn.is-cut .axe{transform:rotate(38deg) translateY(3px);opacity:.55;
+    filter:drop-shadow(0 0 6px rgba(255,70,70,.5)) saturate(.4);}
+  .axe-btn.is-cut .axe-label{color:#ff6b6b;}
+  .axe-btn.busy{pointer-events:none;opacity:.6;}
+  @media (max-width:700px){ .addr{display:none;} }
 </style>
 </head>
 <body>
@@ -32,78 +71,155 @@
   <p class="sub">Every public house link, counted silently. Watching now is
   who has the link open at this moment; views is every load since the
   counter started. The tags on the pages show nothing — the numbers
-  stand here only.</p>
+  stand here only. Each link carries its own fingerprint: a copied page
+  still reports the link it was copied from.</p>
+  <p class="sub">The axe is the switch. Lit and upright, the link lives.
+  Tap once to raise it — tap again inside five seconds to cut. A dropped
+  red axe means the link is cut; tap it twice the same way to switch the
+  link back on. Nothing here is automatic: presence on a guarded link
+  flags red the moment it happens, and the cut is always your word.</p>
+
+  <h2>GUARDED LINKS</h2>
   <table>
-    <thead>
-      <tr><th>LINK</th><th class="addr">ADDRESS</th>
-          <th class="num">WATCHING NOW</th><th class="num">VIEWS</th></tr>
-    </thead>
-    <tbody id="rows"></tbody>
+    <thead><tr><th>LINK</th><th class="addr">ADDRESS</th>
+      <th class="num">WATCHING NOW</th><th class="num">VIEWS</th>
+      <th>STATUS</th><th></th></tr></thead>
+    <tbody id="rowsGuarded"></tbody>
   </table>
+
+  <h2 class="plain">ALL LINKS</h2>
+  <table>
+    <thead><tr><th>LINK</th><th class="addr">ADDRESS</th>
+      <th class="num">WATCHING NOW</th><th class="num">VIEWS</th>
+      <th>STATUS</th><th></th></tr></thead>
+    <tbody id="rowsAll"></tbody>
+  </table>
+
   <div id="stamp">reading the counter…</div>
   <p class="foot">House numbers, for the Warlord's eyes. This address is
   never posted. A dash means the counter lane is unreachable right now —
-  the numbers are never guessed.</p>
+  the numbers are never guessed. Cutting the Newsroom Preview also
+  pauses every tag's counter discovery until it is restored (the tags
+  fail silent; nothing is faked), and cutting this page strands the axe
+  itself — a cut Link Watch is restored from the house side.</p>
 </main>
 <script>
-var LINKS = [
-  ["live-board",         "Master Board",                    "https://longshotwolf.github.io/war-cove-live-board/"],
-  ["live-board-discord", "Master Board — Discord copy",     "https://longshotwolf.github.io/war-cove-live-board-discord/"],
-  ["proof-page",         "Longshot Wolf's Scroll of Proof", "https://longshotwolf.github.io/war-cove-proof-page/"],
-  ["day-brief-warlord",  "Day Brief — Warlord copy",        "https://longshotwolf.github.io/war-cove-day-brief-warlord/"],
-  ["day-brief",          "Day Brief — Pages copy",          "https://longshotwolf.github.io/war-cove-day-brief/"],
-  ["stock-board-discord","Stock Board — Discord copy",      "https://longshotwolf.github.io/war-cove-stock-board-discord/"],
-  ["board",              "Paper Game — Board",              "https://longshotwolf.github.io/war-cove-board/"],
-  ["battlefield",        "Battlefield Chart",               "https://longshotwolf.github.io/war-cove-battlefield/"],
-  ["newsroom",           "War Cove Newsroom",               "https://longshotwolf.github.io/war-cove-newsroom/"],
-  ["newsroom-preview",   "Sheity — Newsroom Preview",       "https://longshotwolf.github.io/war-cove-newsroom-preview/"],
-  ["candle-commentary",  "Calla — Candle Commentary",       "https://longshotwolf.github.io/war-cove-candle-commentary/"],
-  ["link-watch",         "Link Watch — this page",          "https://longshotwolf.github.io/war-cove-link-watch/"]
-];
+var LINKS = [{"key": "live-board", "label": "Master Board", "url": "https://longshotwolf.github.io/war-cove-live-board/", "guarded": true, "fp": "wcfp-fd25a987de"}, {"key": "day-brief-warlord", "label": "Day Brief \u2014 Warlord copy (private)", "url": "https://longshotwolf.github.io/war-cove-day-brief-warlord/", "guarded": true, "fp": "wcfp-6121f428bb"}, {"key": "live-board-discord", "label": "Master Board \u2014 Discord copy", "url": "https://longshotwolf.github.io/war-cove-live-board-discord/", "guarded": false, "fp": "wcfp-f9a6cc58a8"}, {"key": "proof-page", "label": "Longshot Wolf's Scroll of Proof", "url": "https://longshotwolf.github.io/war-cove-proof-page/", "guarded": false, "fp": "wcfp-96f155a1c6"}, {"key": "day-brief", "label": "Day Brief \u2014 Pages copy", "url": "https://longshotwolf.github.io/war-cove-day-brief/", "guarded": false, "fp": "wcfp-255053b596"}, {"key": "stock-board-discord", "label": "Stock Board \u2014 Discord copy", "url": "https://longshotwolf.github.io/war-cove-stock-board-discord/", "guarded": false, "fp": "wcfp-d8005103c6"}, {"key": "board", "label": "Paper Game \u2014 Board", "url": "https://longshotwolf.github.io/war-cove-board/", "guarded": false, "fp": "wcfp-265d3ce8bf"}, {"key": "battlefield", "label": "Battlefield Chart", "url": "https://longshotwolf.github.io/war-cove-battlefield/", "guarded": false, "fp": "wcfp-1b52e4095b"}, {"key": "newsroom", "label": "War Cove Newsroom", "url": "https://longshotwolf.github.io/war-cove-newsroom/", "guarded": false, "fp": "wcfp-4306ed8e6a"}, {"key": "newsroom-preview", "label": "Sheity \u2014 Newsroom Preview", "url": "https://longshotwolf.github.io/war-cove-newsroom-preview/", "guarded": false, "fp": "wcfp-cf91cfcf22"}, {"key": "candle-commentary", "label": "Calla \u2014 Candle Commentary", "url": "https://longshotwolf.github.io/war-cove-candle-commentary/", "guarded": false, "fp": "wcfp-ee8ac8018d"}, {"key": "link-watch", "label": "Link Watch \u2014 this page", "url": "https://longshotwolf.github.io/war-cove-link-watch/", "guarded": false, "fp": "wcfp-bfc2bb92d1"}];
+var TOKEN = "18357f79c8a245a20313527a14c4682d";
 var DOC = "https://longshotwolf.github.io/war-cove-newsroom-preview/simli-endpoint.json";
-var rowsEl = document.getElementById("rows");
-var stampEl = document.getElementById("stamp");
+var AXE = "\n<svg class=\"axe\" viewBox=\"0 0 64 64\" aria-hidden=\"true\">\n  <defs>\n    <linearGradient id=\"bladeGrad\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\">\n      <stop offset=\"0\" stop-color=\"#bdf3ff\"/>\n      <stop offset=\".45\" stop-color=\"#3fc2ff\"/>\n      <stop offset=\"1\" stop-color=\"#1668ff\"/>\n    </linearGradient>\n    <linearGradient id=\"haftGrad\" x1=\"0\" y1=\"1\" x2=\"1\" y2=\"0\">\n      <stop offset=\"0\" stop-color=\"#0e3a6e\"/>\n      <stop offset=\".55\" stop-color=\"#1d7fe0\"/>\n      <stop offset=\"1\" stop-color=\"#7fd4ff\"/>\n    </linearGradient>\n    <filter id=\"holoGlow\" x=\"-70%\" y=\"-70%\" width=\"240%\" height=\"240%\">\n      <feGaussianBlur stdDeviation=\"2.4\" result=\"b\"/>\n      <feMerge><feMergeNode in=\"b\"/><feMergeNode in=\"SourceGraphic\"/></feMerge>\n    </filter>\n  </defs>\n  <g filter=\"url(#holoGlow)\">\n    <path d=\"M14 56 L40 22\" stroke=\"url(#haftGrad)\" stroke-width=\"5.5\"\n          stroke-linecap=\"round\" fill=\"none\"/>\n    <path d=\"M14 56 L40 22\" stroke=\"#dff8ff\" stroke-width=\"1.3\"\n          stroke-linecap=\"round\" fill=\"none\" opacity=\".8\"/>\n    <circle cx=\"21\" cy=\"47\" r=\"1.7\" fill=\"#9fe8ff\"/>\n    <circle cx=\"27\" cy=\"39\" r=\"1.7\" fill=\"#9fe8ff\"/>\n    <circle cx=\"33\" cy=\"31\" r=\"1.7\" fill=\"#9fe8ff\"/>\n    <path d=\"M36 2 C50 -1 60 6 61 18 C54 20 50 26 48 34 C43 26 40 22 36 20 C33 13 34 7 36 2 Z\"\n          fill=\"url(#bladeGrad)\" stroke=\"#0b3f7e\" stroke-width=\"1\"/>\n    <path d=\"M36 2 C50 -1 60 6 61 18 C54 20 50 26 48 34\" fill=\"none\"\n          stroke=\"#eafcff\" stroke-width=\"2.2\" stroke-linecap=\"round\"/>\n    <path class=\"shimmer\" d=\"M40 4 L54 18\" stroke=\"#ffffff\"\n          stroke-width=\"3.4\" stroke-linecap=\"round\" opacity=\"0\"/>\n    <path d=\"M42 11 L46 15 L42 19 L38 15 Z\" fill=\"#bdf3ff\"\n          stroke=\"#1668ff\" stroke-width=\".8\"/>\n  </g>\n</svg>\n";
 var cells = {};
-LINKS.forEach(function(L){
+
+function buildRow(L, tbody){
   var tr = document.createElement("tr");
   var tdName = document.createElement("td");
-  tdName.textContent = L[1];
-  var tdAddr = document.createElement("td");
-  tdAddr.className = "addr";
+  var nm = document.createElement("div"); nm.textContent = L.label;
+  var fp = document.createElement("div"); fp.className = "fp";
+  fp.textContent = L.fp;
+  tdName.appendChild(nm); tdName.appendChild(fp);
+  var tdAddr = document.createElement("td"); tdAddr.className = "addr";
   var a = document.createElement("a");
-  a.href = L[2]; a.textContent = L[2]; a.target = "_blank"; a.rel = "noopener";
+  a.href = L.url; a.textContent = L.url; a.target = "_blank"; a.rel = "noopener";
   tdAddr.appendChild(a);
-  var tdNow = document.createElement("td");
-  tdNow.className = "num now"; tdNow.textContent = "—";
-  var tdViews = document.createElement("td");
-  tdViews.className = "num"; tdViews.textContent = "—";
-  tr.appendChild(tdName); tr.appendChild(tdAddr);
-  tr.appendChild(tdNow); tr.appendChild(tdViews);
-  rowsEl.appendChild(tr);
-  cells[L[0]] = {now: tdNow, views: tdViews};
+  var tdNow = document.createElement("td"); tdNow.className = "num now";
+  tdNow.textContent = "—";
+  var tdViews = document.createElement("td"); tdViews.className = "num";
+  tdViews.textContent = "—";
+  var tdStatus = document.createElement("td");
+  var st = document.createElement("span"); st.className = "status live";
+  st.textContent = "LIVE";
+  var badge = document.createElement("span"); badge.className = "badge";
+  badge.textContent = "PRESENCE NOW";
+  tdStatus.appendChild(st); tdStatus.appendChild(badge);
+  var tdAxe = document.createElement("td");
+  var btn = document.createElement("button");
+  btn.className = "axe-btn"; btn.type = "button";
+  btn.title = "The axe — tap twice to cut, tap twice to bring back";
+  btn.innerHTML = AXE + '<span class="axe-label">LIVE</span>';
+  tdAxe.appendChild(btn);
+  tr.appendChild(tdName); tr.appendChild(tdAddr); tr.appendChild(tdNow);
+  tr.appendChild(tdViews); tr.appendChild(tdStatus); tr.appendChild(tdAxe);
+  tbody.appendChild(tr);
+  var cell = {tr: tr, now: tdNow, views: tdViews, status: st, btn: btn,
+              label: btn.querySelector(".axe-label"),
+              cut: false, armed: false, armTimer: null, busy: false};
+  btn.addEventListener("click", function(){ axeTap(L, cell); });
+  cells[L.key] = cell;
+}
+LINKS.forEach(function(L){
+  buildRow(L, document.getElementById(L.guarded ? "rowsGuarded" : "rowsAll"));
 });
+
+function disarm(cell){
+  cell.armed = false;
+  cell.btn.classList.remove("armed");
+  cell.label.textContent = cell.cut ? "CUT" : "LIVE";
+  if (cell.armTimer){ clearTimeout(cell.armTimer); cell.armTimer = null; }
+}
+function axeTap(L, cell){
+  if (cell.busy) return;
+  if (!cell.armed){
+    cell.armed = true;
+    cell.btn.classList.add("armed");
+    cell.label.textContent = cell.cut ? "BACK ON?" : "CUT?";
+    cell.armTimer = setTimeout(function(){ disarm(cell); }, 5000);
+    return;
+  }
+  if (cell.armTimer){ clearTimeout(cell.armTimer); cell.armTimer = null; }
+  cell.armed = false;
+  cell.btn.classList.remove("armed");
+  cell.busy = true;
+  cell.btn.classList.add("busy");
+  cell.label.textContent = cell.cut ? "RISING…" : "CUTTING…";
+  fire(cell.cut ? "/restore" : "/cut", L.key).then(function(ok){
+    cell.busy = false;
+    cell.btn.classList.remove("busy");
+    if (ok){ tick(); }
+    else { cell.label.textContent = "FAILED"; setTimeout(function(){ disarm(cell); }, 2000); }
+  });
+}
+
 var ep = null;
 function discover(){
   return fetch(DOC + "?cb=" + Date.now(), {mode:"cors", cache:"no-store"})
     .then(function(r){ return r.json(); })
     .then(function(j){ if (j && j.counter) ep = j.counter; });
 }
+function fire(path, key){
+  var chain = ep ? Promise.resolve() : discover();
+  return chain.then(function(){
+    if (!ep) throw 0;
+    return fetch(ep + path + "?page=" + encodeURIComponent(key) +
+                 "&token=" + encodeURIComponent(TOKEN),
+                 {method:"POST", mode:"cors", cache:"no-store"});
+  }).then(function(r){ return r.ok; }).catch(function(){ ep = null; return false; });
+}
 function paint(pages){
   LINKS.forEach(function(L){
-    var p = pages && pages[L[0]];
-    cells[L[0]].now.textContent = p ? String(p.watching_now) : "0";
-    cells[L[0]].views.textContent = p ? String(p.views_total) : "0";
+    var c = cells[L.key];
+    var p = pages && pages[L.key];
+    c.now.textContent = p ? String(p.watching_now) : "0";
+    c.views.textContent = p ? String(p.views_total) : "0";
+    c.cut = !!(p && p.cut);
+    c.status.textContent = c.cut ? "CUT" : "LIVE";
+    c.status.className = "status " + (c.cut ? "cut" : "live");
+    c.btn.classList.toggle("is-cut", c.cut);
+    if (!c.armed && !c.busy) c.label.textContent = c.cut ? "CUT" : "LIVE";
+    var present = !!(p && p.watching_now > 0);
+    c.tr.classList.toggle("flagged", present && L.guarded);
   });
   var t = new Date();
-  stampEl.textContent = "updated " + t.toLocaleTimeString("en-US",
-    {hour12:false}) + " NYC-house count, live from the counter lane";
+  document.getElementById("stamp").textContent =
+    "updated " + t.toLocaleTimeString("en-US", {hour12:false}) +
+    " — live from the counter lane";
 }
 function fail(){
   LINKS.forEach(function(L){
-    cells[L[0]].now.textContent = "—";
-    cells[L[0]].views.textContent = "—";
+    cells[L.key].now.textContent = "—";
+    cells[L.key].views.textContent = "—";
   });
-  stampEl.textContent = "counter lane unreachable — retrying";
+  document.getElementById("stamp").textContent =
+    "counter lane unreachable — retrying";
 }
 function tick(){
   var chain = ep ? Promise.resolve() : discover();
@@ -117,13 +233,13 @@ function tick(){
 tick();
 setInterval(tick, 15000);
 </script>
-<!-- WC-LINK-COUNTER key=link-watch -->
+<!-- WC-LINK-COUNTER key=link-watch fp=wcfp-bfc2bb92d1 -->
 <script>
 (function(){try{
-var KEY="link-watch",DOC="https://longshotwolf.github.io/war-cove-newsroom-preview/simli-endpoint.json";
+var KEY="link-watch",FP="wcfp-bfc2bb92d1",DOC="https://longshotwolf.github.io/war-cove-newsroom-preview/simli-endpoint.json";
 var id=null;try{id=window.sessionStorage.getItem("wc-link-id");if(!id){id="w"+Math.random().toString(36).slice(2)+Date.now().toString(36);window.sessionStorage.setItem("wc-link-id",id);}}catch(e){id="w"+Math.random().toString(36).slice(2)+Date.now().toString(36);}
 var ep=null,viewed=false,fails=0;
-function send(path){if(!ep)return;try{fetch(ep+path+"?page="+encodeURIComponent(KEY)+"&id="+encodeURIComponent(id),{mode:"cors",cache:"no-store",keepalive:true}).then(function(r){if(!r.ok)throw 0;fails=0;if(path==="/view")viewed=true;}).catch(function(){fails++;if(fails>=2){ep=null;discover();}});}catch(e){}}
+function send(path){if(!ep)return;try{fetch(ep+path+"?page="+encodeURIComponent(KEY)+"&fp="+encodeURIComponent(FP)+"&id="+encodeURIComponent(id),{mode:"cors",cache:"no-store",keepalive:true}).then(function(r){if(!r.ok)throw 0;fails=0;if(path==="/view")viewed=true;}).catch(function(){fails++;if(fails>=2){ep=null;discover();}});}catch(e){}}
 function discover(){try{fetch(DOC+"?cb="+Date.now(),{mode:"cors",cache:"no-store"}).then(function(r){return r.json();}).then(function(j){if(j&&j.counter){ep=j.counter;if(!viewed)send("/view");}}).catch(function(){});}catch(e){}}
 discover();
 setInterval(function(){if(ep){if(!viewed)send("/view");else send("/beat");}else discover();},20000);
