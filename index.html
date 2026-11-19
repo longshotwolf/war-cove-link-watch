@@ -97,8 +97,13 @@
 
   <div id="stamp">reading the counter…</div>
   <p class="foot">House numbers, for the Warlord's eyes. This address is
-  never posted. A dash means the counter lane is unreachable right now —
-  the numbers are never guessed. Cutting the Newsroom Preview also
+  never posted. This page reads the counter two ways: the LIVE lane
+  first (the counter's own tunnel feed), and the moment that fails it
+  falls back to the counter's SNAPSHOT door — the same counts,
+  refreshed every 30 seconds onto the house Pages, stamped with the
+  snapshot's time so they are never mistaken for live. A dash means
+  both doors are unreachable right now — the numbers are never
+  guessed. Cutting the Newsroom Preview also
   pauses every tag's counter discovery until it is restored (the tags
   fail silent; nothing is faked), and cutting this page strands the axe
   itself — a cut Link Watch is restored from the house side.</p>
@@ -107,6 +112,8 @@
 var LINKS = [{"key": "live-board", "label": "Master Board", "url": "https://longshotwolf.github.io/war-cove-live-board/", "guarded": true, "fp": "wcfp-fd25a987de"}, {"key": "day-brief-warlord", "label": "Day Brief \u2014 Warlord copy (private)", "url": "https://longshotwolf.github.io/war-cove-day-brief-warlord/", "guarded": true, "fp": "wcfp-6121f428bb"}, {"key": "live-board-discord", "label": "Master Board \u2014 Discord copy", "url": "https://longshotwolf.github.io/war-cove-live-board-discord/", "guarded": false, "fp": "wcfp-f9a6cc58a8"}, {"key": "proof-page", "label": "Longshot Wolf's Scroll of Proof", "url": "https://longshotwolf.github.io/war-cove-proof-page/", "guarded": false, "fp": "wcfp-96f155a1c6"}, {"key": "day-brief", "label": "Day Brief \u2014 Pages copy", "url": "https://longshotwolf.github.io/war-cove-day-brief/", "guarded": false, "fp": "wcfp-255053b596"}, {"key": "stock-board-discord", "label": "Stock Board \u2014 Discord copy", "url": "https://longshotwolf.github.io/war-cove-stock-board-discord/", "guarded": false, "fp": "wcfp-d8005103c6"}, {"key": "board", "label": "Paper Game \u2014 Board", "url": "https://longshotwolf.github.io/war-cove-board/", "guarded": false, "fp": "wcfp-265d3ce8bf"}, {"key": "battlefield", "label": "Battlefield Chart", "url": "https://longshotwolf.github.io/war-cove-battlefield/", "guarded": false, "fp": "wcfp-1b52e4095b"}, {"key": "newsroom", "label": "War Cove Newsroom", "url": "https://longshotwolf.github.io/war-cove-newsroom/", "guarded": false, "fp": "wcfp-4306ed8e6a"}, {"key": "newsroom-preview", "label": "Sheity \u2014 Newsroom Preview", "url": "https://longshotwolf.github.io/war-cove-newsroom-preview/", "guarded": false, "fp": "wcfp-cf91cfcf22"}, {"key": "candle-commentary", "label": "Calla \u2014 Candle Commentary", "url": "https://longshotwolf.github.io/war-cove-candle-commentary/", "guarded": false, "fp": "wcfp-ee8ac8018d"}, {"key": "link-watch", "label": "Link Watch \u2014 this page", "url": "https://longshotwolf.github.io/war-cove-link-watch/", "guarded": false, "fp": "wcfp-bfc2bb92d1"}];
 var TOKEN = "18357f79c8a245a20313527a14c4682d";
 var DOC = "https://longshotwolf.github.io/war-cove-newsroom-preview/simli-endpoint.json";
+var SNAP = "https://longshotwolf.github.io/war-cove-newsroom-preview/counts-snapshot.json";
+var feedNote = "live from the counter lane";
 var AXE = "\n<svg class=\"axe\" viewBox=\"0 0 64 64\" aria-hidden=\"true\">\n  <defs>\n    <linearGradient id=\"bladeGrad\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\">\n      <stop offset=\"0\" stop-color=\"#bdf3ff\"/>\n      <stop offset=\".45\" stop-color=\"#3fc2ff\"/>\n      <stop offset=\"1\" stop-color=\"#1668ff\"/>\n    </linearGradient>\n    <linearGradient id=\"haftGrad\" x1=\"0\" y1=\"1\" x2=\"1\" y2=\"0\">\n      <stop offset=\"0\" stop-color=\"#0e3a6e\"/>\n      <stop offset=\".55\" stop-color=\"#1d7fe0\"/>\n      <stop offset=\"1\" stop-color=\"#7fd4ff\"/>\n    </linearGradient>\n    <filter id=\"holoGlow\" x=\"-70%\" y=\"-70%\" width=\"240%\" height=\"240%\">\n      <feGaussianBlur stdDeviation=\"2.4\" result=\"b\"/>\n      <feMerge><feMergeNode in=\"b\"/><feMergeNode in=\"SourceGraphic\"/></feMerge>\n    </filter>\n  </defs>\n  <g filter=\"url(#holoGlow)\">\n    <path d=\"M14 56 L40 22\" stroke=\"url(#haftGrad)\" stroke-width=\"5.5\"\n          stroke-linecap=\"round\" fill=\"none\"/>\n    <path d=\"M14 56 L40 22\" stroke=\"#dff8ff\" stroke-width=\"1.3\"\n          stroke-linecap=\"round\" fill=\"none\" opacity=\".8\"/>\n    <circle cx=\"21\" cy=\"47\" r=\"1.7\" fill=\"#9fe8ff\"/>\n    <circle cx=\"27\" cy=\"39\" r=\"1.7\" fill=\"#9fe8ff\"/>\n    <circle cx=\"33\" cy=\"31\" r=\"1.7\" fill=\"#9fe8ff\"/>\n    <path d=\"M36 2 C50 -1 60 6 61 18 C54 20 50 26 48 34 C43 26 40 22 36 20 C33 13 34 7 36 2 Z\"\n          fill=\"url(#bladeGrad)\" stroke=\"#0b3f7e\" stroke-width=\"1\"/>\n    <path d=\"M36 2 C50 -1 60 6 61 18 C54 20 50 26 48 34\" fill=\"none\"\n          stroke=\"#eafcff\" stroke-width=\"2.2\" stroke-linecap=\"round\"/>\n    <path class=\"shimmer\" d=\"M40 4 L54 18\" stroke=\"#ffffff\"\n          stroke-width=\"3.4\" stroke-linecap=\"round\" opacity=\"0\"/>\n    <path d=\"M42 11 L46 15 L42 19 L38 15 Z\" fill=\"#bdf3ff\"\n          stroke=\"#1668ff\" stroke-width=\".8\"/>\n  </g>\n</svg>\n";
 var cells = {};
 
@@ -211,7 +218,14 @@ function paint(pages){
   var t = new Date();
   document.getElementById("stamp").textContent =
     "updated " + t.toLocaleTimeString("en-US", {hour12:false}) +
-    " — live from the counter lane";
+    " — " + feedNote;
+}
+function paintSnap(j){
+  feedNote = "live lane down — SNAPSHOT counts as of " +
+    new Date(j.snapshot_at).toLocaleTimeString("en-US",
+      {hour12:false, timeZone:"America/New_York"}) +
+    " NYC (refreshed every 30 seconds; snapshot counts, not live)";
+  paint(j.pages || {});
 }
 function fail(){
   LINKS.forEach(function(L){
@@ -219,7 +233,7 @@ function fail(){
     cells[L.key].views.textContent = "—";
   });
   document.getElementById("stamp").textContent =
-    "counter lane unreachable — retrying";
+    "both feed doors unreachable — retrying";
 }
 function tick(){
   var chain = ep ? Promise.resolve() : discover();
@@ -227,8 +241,17 @@ function tick(){
     if (!ep) throw 0;
     return fetch(ep + "/counts", {mode:"cors", cache:"no-store"});
   }).then(function(r){ if (!r.ok) throw 0; return r.json(); })
-    .then(function(j){ paint(j.pages || {}); })
-    .catch(function(){ ep = null; fail(); });
+    .then(function(j){ feedNote = "live from the counter lane"; paint(j.pages || {}); })
+    .catch(function(){
+      ep = null;
+      return fetch(SNAP + "?cb=" + Date.now(), {mode:"cors", cache:"no-store"})
+        .then(function(r){ if (!r.ok) throw 0; return r.json(); })
+        .then(function(j){
+          if (!j || !j.pages || !j.snapshot_at) throw 0;
+          paintSnap(j);
+        })
+        .catch(function(){ fail(); });
+    });
 }
 tick();
 setInterval(tick, 15000);
